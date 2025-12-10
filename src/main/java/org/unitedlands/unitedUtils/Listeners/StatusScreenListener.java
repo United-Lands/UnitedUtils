@@ -1,11 +1,13 @@
 package org.unitedlands.unitedUtils.Listeners;
 
-import com.palmergames.adventure.text.Component;
-import com.palmergames.adventure.text.event.ClickEvent;
-import com.palmergames.adventure.text.event.HoverEvent;
-import com.palmergames.adventure.text.minimessage.MiniMessage;
 import com.palmergames.bukkit.towny.event.statusscreen.NationStatusScreenEvent;
 import com.palmergames.bukkit.towny.event.statusscreen.TownStatusScreenEvent;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
