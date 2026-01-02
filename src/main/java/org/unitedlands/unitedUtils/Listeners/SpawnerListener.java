@@ -51,11 +51,16 @@ public class SpawnerListener implements Listener {
         for (BlockState state : chunk.getTileEntities()) {
             if (state.getType() == Material.SPAWNER) {
                 CreatureSpawner spawner = (CreatureSpawner) state;
+
+                if (spawner.getSpawnedType() == null)
+                    continue;
+                    
                 var type = spawner.getSpawnedType().toString();
 
                 if (!whitelist.contains(type)) {
                     var block = spawner.getBlock();
-                    plugin.getLogger().info("Cleaning blacklisted " + type + " spawner at " + block.getLocation().toString());
+                    plugin.getLogger()
+                            .info("Cleaning blacklisted " + type + " spawner at " + block.getLocation().toString());
                     block.setType(Material.AIR);
                 }
 
