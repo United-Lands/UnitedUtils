@@ -14,11 +14,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.unitedlands.unitedUtils.Commands.Commands;
 import org.unitedlands.unitedUtils.Commands.RandomTeleportCommand;
 import org.unitedlands.unitedUtils.Commands.TownyNationCommandExtensions;
-import org.unitedlands.unitedUtils.Modules.BorderWrapper;
-import org.unitedlands.unitedUtils.Modules.ChunkVisitCache;
-import org.unitedlands.unitedUtils.Modules.PortalManager;
-import org.unitedlands.unitedUtils.Modules.VoidProtection;
-import org.unitedlands.unitedUtils.Modules.WikiMapLink;
+import org.unitedlands.unitedUtils.Modules.*;
 
 import java.util.Objects;
 
@@ -28,7 +24,7 @@ public final class UnitedUtils extends JavaPlugin {
 
     private Economy economy;
     private SpawnerListener spawnerListener;
-    private ChunkVisitCache cache;
+    private PortalManager portalManager;
 
     public void unregisterListeners() {
         HandlerList.unregisterAll(this);
@@ -45,11 +41,10 @@ public final class UnitedUtils extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic.
-        // Save default config if not already present.
         saveDefaultConfig();
         FileConfiguration config = getConfig();
 
-        // Register the unitedutils command.
+        // Register commands.
         Commands generalCommands = new Commands(this);
         registerCommand("unitedutils", generalCommands, generalCommands);
         registerCommand("remskill", generalCommands, generalCommands);
@@ -61,20 +56,25 @@ public final class UnitedUtils extends JavaPlugin {
         registerCommand("greylist", generalCommands, generalCommands);
         registerCommand("rtp", new RandomTeleportCommand(this), null);
 
-        // Register Towny command extensions
+        // Register Towny command extensions.
         new TownyNationCommandExtensions(this);
 
+        // Register general listeners.
         getServer().getPluginManager().registerEvents(new VoidProtection(config), this);
-        getServer().getPluginManager().registerEvents(new PortalManager(config), this);
-        getServer().getPluginManager().registerEvents(new WikiMapLink(), this);
+        portalManager = new PortalManager(this);
+        getServer().getPluginManager().registerEvents(portalManager, this);
+
+        // Register Wiki Map Link.
         WikiMapLink wikiMapLink = new WikiMapLink();
         getServer().getPluginManager().registerEvents(wikiMapLink, this);
         wikiMapLink.registerStrippedNationStatus();
+
+        // Everything else.
         new BorderWrapper(this);
 
         this.getServer().getPluginManager().registerEvents(new StatusScreenListener(this), this);
 
-        cache = new ChunkVisitCache(-2400, 2400, -1200, 1200);
+        ChunkVisitCache cache = new ChunkVisitCache(-2400, 2400, -1200, 1200);
         spawnerListener = new SpawnerListener(this, cache);
         this.getServer().getPluginManager().registerEvents(spawnerListener, this);
 
@@ -87,6 +87,7 @@ public final class UnitedUtils extends JavaPlugin {
         // Reapply config on reload.
         reloadConfig();
         spawnerListener.loadConfig();
+        portalManager.loadConfig(getConfig());
         // unregisterListeners();
         // loadEconomy();
         getLogger().info("Plugin configuration reloaded.");

@@ -51,7 +51,9 @@ spawn-portal:
     x: 1111
     y: 38
     z: 997
-  command: "warps"
+   # Command is ran from console, so only use console compatible commands.
+  # Ensure the {player} variable is used.
+  command: "pa open warps {player}"
 
 ####################
 # Void Protections #

@@ -12,25 +12,33 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.world.PortalCreateEvent;
+import org.unitedlands.unitedUtils.UnitedUtils;
 
 import java.util.*;
 
 public class PortalManager implements Listener {
 
-    private final List<String> worldsBlacklist;
-    private final String portalDenyMessage;
-    private final Map<String, Map<String, String>> worldMappings;
-    private final Location corner1;
-    private final Location corner2;
-    private final String warpCommand;
+    private final UnitedUtils plugin;
+    private  List<String> worldsBlacklist;
+    private  String portalDenyMessage;
+    private  Map<String, Map<String, String>> worldMappings;
+    private  Location corner1;
+    private  Location corner2;
+    private  String warpCommand;
     private final HashMap<UUID, Boolean> playerInZone = new HashMap<>();
 
-    public PortalManager(FileConfiguration config) {
+    public PortalManager(UnitedUtils plugin) {
+        this.plugin = plugin;
+        loadConfig(plugin.getConfig());
+    }
+
+    public void loadConfig(FileConfiguration config) {
         // Load configuration values.
         this.worldsBlacklist = config.getStringList("nether-portals.blacklisted-worlds");
         this.portalDenyMessage = config.getString("messages.nether-portal-deny");
         this.worldMappings = loadWorldMappings(Objects.requireNonNull(config.getConfigurationSection("portal-mapping")));
         this.warpCommand = config.getString("spawn-portal.command");
+
         corner1 = new Location(
                 Bukkit.getWorld(Objects.requireNonNull(config.getString("spawn-portal.world"))),
                 config.getDouble("spawn-portal.corner1.x"),
@@ -64,6 +72,10 @@ public class PortalManager implements Listener {
 
     // Check the player is within the spawn portal defined region.
     private boolean isWithinZone(Location location) {
+        if (corner1 == null || !location.getWorld().equals(corner1.getWorld())) {
+            return false;
+        }
+
         int x = location.getBlockX();
         int y = location.getBlockY();
         int z = location.getBlockZ();
@@ -140,11 +152,11 @@ public class PortalManager implements Listener {
 
         // Only run the command when the player enters the portal.
         if (isInZone && !playerInZone.getOrDefault(playerId, false)) {
-            String finalCommand = warpCommand.replace("{player}", player.getName());
-            player.performCommand(finalCommand);
             playerInZone.put(playerId, true);
+            String finalCommand = warpCommand.replace("{player}", player.getName());
+            Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
+
         } else if (!isInZone) {
-            // Player has left the portal, reset their status.
             playerInZone.put(playerId, false);
         }
     }
